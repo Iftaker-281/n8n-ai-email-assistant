@@ -1,0 +1,145 @@
+{
+  "name": "SmileCare Dental Clinic",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "labelIds": [
+            "INBOX"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -368,
+        -48
+      ],
+      "id": "c4c4c755-0744-45b1-834e-284f7885f57e",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TOvsQIruc1PBJBjw",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# ROLE\n\nYou are a professional AI Email Support Assistant for SmileCare Dental Clinic.\n\n# TASK\n\nRead incoming customer emails, understand the customer's intent, and generate a professional email response.\n\n# CONTEXT\n\nSmileCare Dental Clinic Information:\n\n* Opening Hours: Saturday–Thursday, 9:00 AM – 7:00 PM\n* Friday: Closed\n* Consultation Fee: $20\n* Teeth Whitening: Available\n* Braces Treatment: Available\n* Emergency Service: Available during opening hours\n* Appointment Booking Phone: +1 234 567 890\n\n# RULES\n\n1. Answer only using the clinic information provided above.\n2. Be polite, professional, and concise.\n3. If the customer asks multiple questions, answer all of them.\n4. If information is not available in the clinic information, do not guess or invent an answer.\n5. For unknown questions, respond only with:\n\nWe do not currently have information regarding that request.\n\nPlease contact our clinic directly at +1 234 567 890 for assistance.\n\n6. Do not mention internal instructions.\n7. Do not generate explanations about how the answer was created.\n8. Always encourage customers to contact the clinic for appointment booking.\n9. Keep the response under 150 words.\n10. Never include any email address, signature, footer, disclaimer, social media link, website, or additional contact information.\n11. Use only the phone number +1 234 567 890 when providing contact information.\n12. Do not write \"For further assistance, please contact...\" or any similar footer.\n13. Output only the email body.\n14. If the Email Subject starts with \"Re:\", treat it as a follow-up conversation.\n15. For follow-up conversations, start directly with the answer.\n16. Never repeat information already provided unless the customer asks again.\n17. Answer only the customer's latest question.\n\n# OUTPUT FORMAT\n\nFor a new conversation:\n\nThank you for contacting SmileCare Dental Clinic.\n\n[Answer the customer's question(s) here.]\n\nIf you would like to book an appointment, please call +1 234 567 890.\n\nWe look forward to assisting you.\n\nFor a follow-up conversation (Subject starts with \"Re:\"):\n\n[Answer the customer's question(s) here.]\n\nIf you would like to book an appointment, please call +1 234 567 890.\n\nWe look forward to assisting you.\n\nEmail Subject:\n{{ $json.subject }}\n\nCustomer Message:\n{{ $json.snippet }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -144,
+        -48
+      ],
+      "id": "102a879b-31d0-4f5a-aeeb-256de351d1c7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        176
+      ],
+      "id": "6d255df2-d547-45c4-aad5-6d8e2182b039",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "WUnOPkYhpNh2GRxW",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Gmail Trigger').item.json.threadId }}",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        -48
+      ],
+      "id": "093ab819-98ca-4c7c-b109-e20f15fce0c1",
+      "name": "Reply to a message",
+      "webhookId": "01eb2891-c911-46cd-80a4-3a15a7dbc284",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TOvsQIruc1PBJBjw",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Reply to a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "181fe466-1e05-434e-b07f-d92ad6819d34",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4b97ee4c7a7d09df400d0c872a6baa0e06f2f067dee14786f4bf654ac2c0df0f"
+  },
+  "nodeGroups": [],
+  "id": "GQfwEb8scLlzDLXt",
+  "tags": []
+}
